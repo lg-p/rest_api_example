@@ -25,19 +25,23 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    return _app
+
+
+if __name__ == "__main__":
+    app = create_app()
+
     engine = create_engine('sqlite:///db.sqlite')
     session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
 
     Base = declarative_base()
     Base.query = session.query_property()
 
-    @_app.teardown_appcontext
+    from models import *
+    Base.metadata.create_all(bing=engine)
+
+    app.run()
+
+    @app.teardown_appcontext
     def shutdown_session(exception=None):
         session.remove()
-
-    return _app
-
-
-if __name__ == "__main__":
-    app = create_app()
-    app.run()
