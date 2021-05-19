@@ -17,16 +17,27 @@ class User(Base):
         self.login = kwargs.get('login')
         self.password = bcrypt.hash(kwargs.get('password'))
 
-    def get_token(self, expire_time=24):
+    def get_token(self, expire_time=24) -> str:
+        """
+        Creates an access token
+        """
         expire_delta = timedelta(expire_time)
         token = create_access_token(identity=self.id, expires_delta=expire_delta)
         return token
 
     @classmethod
-    def authenticate(cls, login, password):
-        user = cls.query.filter(cls.login == login)
+    def authenticate(cls, login: str, password: str):
+        """
+        User authentication
+        """
+        result = cls.query.filter(cls.login == login)
+        if not result.scalar():
+            raise Exception("No user with this login")
+
+        user = result.one()
         if not bcrypt.verify(password, user.password):
             raise Exception("No user with this password")
+
         return user
 
     @classmethod

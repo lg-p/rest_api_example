@@ -10,3 +10,14 @@ def test_registration(test_client):
                            })
     assert res.status_code == 200
     assert res.get_json().get('message') == "User registered successfully"
+
+
+def test_authentication(user, test_client):
+    res = test_client.post('/api/login',
+                           json={
+                               'login': "test_user",
+                               'password': "password"
+                           })
+
+    assert res.status_code == 200
+    assert res.get_json().get('access_token')
