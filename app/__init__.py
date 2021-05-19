@@ -4,6 +4,7 @@ from flask import Flask
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from flask_jwt_extended import JWTManager
 
 from app.config import Config
 
@@ -24,6 +25,8 @@ def create_app(test_config=None):
         os.makedirs(_app.instance_path)
     except OSError:
         pass
+
+    jwt = JWTManager(_app)
 
     return _app
 
