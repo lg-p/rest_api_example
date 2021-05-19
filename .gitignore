@@ -3,3 +3,6 @@
 venv/
 app/__pycache__/
 tests/__pycache__/
+app/registration/__pycache__/
+__pycache__/
+db.sqlite
