@@ -28,3 +28,11 @@ class User(Base):
         if not bcrypt.verify(password, user.password):
             raise Exception("No user with this password")
         return user
+
+    @classmethod
+    def user_exists(cls, login: str) -> bool:
+        """
+        Checks for the existence of a user
+        """
+        user_exist = cls.query.filter(cls.login == login).scalar()
+        return user_exist
