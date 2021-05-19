@@ -15,7 +15,7 @@ class User(Base):
 
     def __init__(self, **kwargs):
         self.login = kwargs.get('login')
-        self.password = bcrypt(kwargs.get('password'))
+        self.password = bcrypt.hash(kwargs.get('password'))
 
     def get_token(self, expire_time=24):
         expire_delta = timedelta(expire_time)
