@@ -1,6 +1,7 @@
 from datetime import timedelta
 
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy.orm import relationship
 from flask_jwt_extended import create_access_token
 from passlib.hash import bcrypt
 
@@ -12,6 +13,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     login = Column(String(250), nullable=False, unique=True)
     password = Column(String(120), nullable=False)
+    items = relationship('Item')
 
     def __init__(self, **kwargs):
         self.login = kwargs.get('login')
@@ -47,3 +49,10 @@ class User(Base):
         """
         user_exist = cls.query.filter(cls.login == login).scalar()
         return user_exist
+
+
+class Item(Base):
+    __tablename__ = "items"
+    id = Column(Integer, nullable=True, primary_key=True)
+    name = Column(String(250), nullable=True, unique=True)
+    user_id = Column(Integer, ForeignKey('users.id'))
