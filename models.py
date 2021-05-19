@@ -15,7 +15,7 @@ class User(Base):
 
     def __init__(self, **kwargs):
         self.login = kwargs.get('login')
-        self.password = bcrypt(kwargs.get('password'))
+        self.password = bcrypt.hash(kwargs.get('password'))
 
     def get_token(self, expire_time=24):
         expire_delta = timedelta(expire_time)
@@ -28,3 +28,11 @@ class User(Base):
         if not bcrypt.verify(password, user.password):
             raise Exception("No user with this password")
         return user
+
+    @classmethod
+    def user_exists(cls, login: str) -> bool:
+        """
+        Checks for the existence of a user
+        """
+        user_exist = cls.query.filter(cls.login == login).scalar()
+        return user_exist
