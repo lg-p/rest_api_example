@@ -35,6 +35,9 @@ def create_app(test_config=None):
     from app.registration import bp_reg
     _app.register_blueprint(bp_reg, url_prefix='/api')
 
+    from app.authentication import bp_auth
+    _app.register_blueprint(bp_auth, url_prefix='/api')
+
     jwt = JWTManager(_app)
 
     return _app
