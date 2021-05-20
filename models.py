@@ -64,3 +64,16 @@ class Item(Base):
         """
         item_exist = cls.query.filter(cls.name == name, cls.user_id == user_id).scalar()
         return item_exist
+
+    @classmethod
+    def find_item(cls, item_id: int, user_id: int):
+        """
+        Searches for an item by id
+        :return: Item
+        """
+        res = cls.query.filter(cls.id == item_id, cls.user_id == user_id)
+        if not res.scalar():
+            raise Exception("Item not found")
+
+        return res.one()
+
