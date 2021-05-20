@@ -56,3 +56,11 @@ class Item(Base):
     id = Column(Integer, nullable=True, primary_key=True)
     name = Column(String(250), nullable=True, unique=True)
     user_id = Column(Integer, ForeignKey('users.id'))
+
+    @classmethod
+    def item_exists(cls, name: str, user_id: str) -> bool:
+        """
+        Checks for the existence of a item
+        """
+        item_exist = cls.query.filter(cls.name == name, cls.user_id == user_id).scalar()
+        return item_exist
