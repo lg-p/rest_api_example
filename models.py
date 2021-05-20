@@ -77,3 +77,18 @@ class Item(Base):
 
         return res.one()
 
+    @classmethod
+    def get_list_by_user(cls, user_id: int) -> list:
+        """
+        Gets a list of items for a specific user
+        """
+        items_list = []
+
+        result = cls.query.filter(cls.user_id == user_id).all()
+        for item in result:
+            items_list.append({
+                    'id': item.id,
+                    'name': item.name
+                })
+
+        return items_list
