@@ -30,3 +30,15 @@ def test_get_list_of_item(test_client, item, user_headers):
     assert len(items_list) != 0
     assert items_list[0].get('name') == "test_item"
 
+
+def test_send_item(test_client, host_user, item, user_headers):
+    res = test_client.post('api/send',
+                           headers=user_headers,
+                           json={
+                               'id': item.id,
+                               'login': host_user.login
+                           })
+
+    assert res.status_code == 200
+    assert res.get_json() == f"api/items/?login={host_user.login}&id={item.id}"
+
