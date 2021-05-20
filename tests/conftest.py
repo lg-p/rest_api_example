@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.orm.session import close_all_sessions
 
 from app import create_app, Base, engine, session as db_session
-from models import User
+from models import User, Item
 
 
 @pytest.fixture
@@ -45,4 +45,30 @@ def user(session):
     return user
 
 
+@pytest.fixture
+def item(user, session):
+    item = Item(name="test_item")
+    session.add(item)
+    session.commit()
 
+    return item
+
+
+@pytest.fixture
+def user_token(user, test_client):
+    res = test_client.post('/api/login',
+                           json={
+                               'login': "test_user",
+                               'password': "password"
+                           })
+
+    return res.get_json()['access_token']
+
+
+@pytest.fixture
+def user_headers(user_token):
+    headers = {
+        'Authorization': f"Bearer {user_token}"
+    }
+
+    return headers
