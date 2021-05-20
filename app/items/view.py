@@ -29,3 +29,22 @@ def create_item():
         'message': f"Item created successfully, {item.id}, {item.name}"
     })
 
+
+@bp_it.route('/items/<item_id>', methods=['DELETE'])
+@jwt_required()
+def delete_item(item_id):
+    user_id = get_jwt_identity()
+
+    item = Item.find_item(int(item_id), user_id)
+
+    try:
+        session.delete(item)
+        session.commit()
+    except Exception as e:
+        return jsonify({
+            'message': e
+        })
+
+    return jsonify({
+        'message': "Item deleted successfully"
+    })

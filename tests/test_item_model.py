@@ -10,3 +10,11 @@ def test_create_item(test_client, user_headers):
                            })
 
     assert res.status_code == 200
+
+
+def test_delete_item(test_client, item, user_headers):
+    res = test_client.delete(f'api/items/{item.id}',
+                             headers=user_headers)
+
+    assert res.status_code == 200
+    assert res.get_json().get('message') == "Item deleted successfully"
