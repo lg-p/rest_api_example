@@ -47,10 +47,9 @@ def user(session):
 
 @pytest.fixture
 def item(user, session):
-    item = Item(name="test_item")
+    item = Item(name="test_item", user_id=user.id)
     session.add(item)
     session.commit()
-
     return item
 
 
