@@ -48,3 +48,14 @@ def delete_item(item_id):
     return jsonify({
         'message': "Item deleted successfully"
     })
+
+
+@bp_it.route('/items', methods=['GET'])
+@jwt_required()
+def get_list_of_item():
+    user_id = get_jwt_identity()
+
+    items_list = Item.get_list_by_user(user_id)
+
+    return jsonify(items_list)
+
