@@ -91,6 +91,18 @@ class Item(Base):
         return res.one()
 
     @classmethod
+    def find_item_by_id(cls, item_id: int):
+        """
+        Searches for an item by id
+        :return: Item
+        """
+        res = cls.query.filter(cls.id == item_id)
+        if not res.scalar():
+            raise Exception("Item not found")
+
+        return res.one()
+
+    @classmethod
     def get_list_by_user(cls, user_id: int) -> list:
         """
         Gets a list of items for a specific user
