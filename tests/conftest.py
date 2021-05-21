@@ -80,3 +80,23 @@ def user_headers(user_token):
     }
 
     return headers
+
+
+@pytest.fixture
+def host_user_token(user, test_client):
+    res = test_client.post('/api/login',
+                           json={
+                               'login': "host_user",
+                               'password': "password"
+                           })
+
+    return res.get_json()['access_token']
+
+
+@pytest.fixture
+def host_user_headers(host_user_token):
+    headers = {
+        'Authorization': f"Bearer {host_user_token}"
+    }
+
+    return headers

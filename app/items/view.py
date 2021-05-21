@@ -1,3 +1,5 @@
+from urllib import parse
+
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
@@ -78,3 +80,34 @@ def send_item():
 
     return jsonify(link)
 
+
+@bp_it.route('/get', methods=['GET'])
+@jwt_required()
+def get_item():
+    user_id = get_jwt_identity()
+
+    link = request.get_json().get('link')
+    parsed_query = parse.urlparse(link).query
+    parsed_params = parse.parse_qsl(parsed_query)
+
+    user_login = str(parsed_params[0][1])
+    item_id = int(parsed_params[1][1])
+
+    user = User.find_user_by_login(user_login)
+    if user_id != user.id:
+        raise Exception("The link is for another user")
+
+    item = Item.find_item_by_id(item_id)
+
+    try:
+        item.user_id = user.id
+        session.add(item)
+        session.commit()
+    except Exception as e:
+        return jsonify({
+            'message': e
+        })
+
+    return jsonify({
+        'message': "Item received successfully"
+    })

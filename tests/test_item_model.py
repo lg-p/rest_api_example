@@ -42,3 +42,14 @@ def test_send_item(test_client, host_user, item, user_headers):
     assert res.status_code == 200
     assert res.get_json() == f"api/items/?login={host_user.login}&id={item.id}"
 
+
+def test_get_item(test_client, host_user, item, host_user_headers):
+    res = test_client.get('api/get',
+                          headers=host_user_headers,
+                          json={
+                              'link': f"api/items/?login={host_user.login}&id={item.id}"
+                          })
+
+    assert res.status_code == 200
+
+
