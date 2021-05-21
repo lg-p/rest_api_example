@@ -51,5 +51,8 @@ def test_get_item(test_client, host_user, item, host_user_headers):
                           })
 
     assert res.status_code == 200
+    assert res.get_json().get('message') == "Item received successfully"
+    assert item.user_id == host_user.id
+
 
 
