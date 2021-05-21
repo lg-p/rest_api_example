@@ -50,6 +50,19 @@ class User(Base):
         user_exist = cls.query.filter(cls.login == login).scalar()
         return user_exist
 
+    @classmethod
+    def find_user_by_login(cls, login: str):
+        """
+        Searches for an user by login
+        :return: User
+        """
+        res = cls.query.filter(cls.login == login)
+
+        if not res.scalar():
+            raise Exception("User not found")
+
+        return res.one()
+
 
 class Item(Base):
     __tablename__ = "items"
