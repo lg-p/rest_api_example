@@ -1,8 +1,9 @@
 from urllib import parse
 
-from flask import request, jsonify
+from flask import jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_apispec import use_kwargs, marshal_with
+from marshmallow import fields, validate
 
 from app import session
 from app.items import bp_it
@@ -70,12 +71,12 @@ def get_list_of_item():
 
 @bp_it.route('/send', methods=['POST'])
 @jwt_required()
-def send_item():
+@use_kwargs({'id': fields.Integer(), 'login': fields.String(required=True, validate=[validate.Length(max=250)])})
+def send_item(**kwargs):
     user_id = get_jwt_identity()
 
-    param = request.get_json()
-    item_id = param.get('id')
-    host_user_login = param.get('login')
+    item_id = kwargs.get('id')
+    host_user_login = kwargs.get('login')
 
     if not User.user_exists(host_user_login):
         raise Exception("User does not exist")
@@ -89,10 +90,12 @@ def send_item():
 
 @bp_it.route('/get', methods=['GET'])
 @jwt_required()
-def get_item():
+@use_kwargs({'link': fields.String(required=True)})
+@marshal_with(ItemSchema)
+def get_item(**kwargs):
     user_id = get_jwt_identity()
 
-    link = request.get_json().get('link')
+    link = kwargs.get('link')
     parsed_query = parse.urlparse(link).query
     parsed_params = parse.parse_qsl(parsed_query)
 
