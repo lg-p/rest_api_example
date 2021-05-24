@@ -5,6 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from flask_jwt_extended import JWTManager
+from flask_apispec.extension import FlaskApiSpec
 
 from app.config import Config
 
@@ -42,6 +43,9 @@ def create_app(test_config=None):
     _app.register_blueprint(bp_it, url_prefix='/api')
 
     jwt = JWTManager(_app)
+
+    docs = FlaskApiSpec()
+    docs.init_app(_app)
 
     return _app
 
