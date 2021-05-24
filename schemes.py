@@ -14,3 +14,8 @@ class UserSchema(Schema):
     password = fields.String(required=True, validate=[validate.Length(max=120)])
     items = fields.Nested(ItemSchema, many=True, dump_only=True)
     message = fields.String(dump_only=True)
+
+
+class AuthenticationSchema(Schema):
+    access_token = fields.String(dump_only=True)
+    message = fields.String(dump_only=True)
