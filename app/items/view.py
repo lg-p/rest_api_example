@@ -2,17 +2,20 @@ from urllib import parse
 
 from flask import request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_apispec import use_kwargs, marshal_with
 
 from app import session
 from app.items import bp_it
 from models import Item, User
+from schemes import ItemSchema
 
 
 @bp_it.route('/items/new', methods=['POST'])
 @jwt_required()
-def create_item():
-    param = request.json
-    name = param.get('name')
+@use_kwargs(ItemSchema)
+@marshal_with(ItemSchema)
+def create_item(**kwargs):
+    name = kwargs.get('name')
 
     user_id = get_jwt_identity()
     if Item.item_exists(name, user_id):
@@ -34,6 +37,8 @@ def create_item():
 
 @bp_it.route('/items/<item_id>', methods=['DELETE'])
 @jwt_required()
+@use_kwargs(ItemSchema(only=('id',)))
+@marshal_with(ItemSchema)
 def delete_item(item_id):
     user_id = get_jwt_identity()
 
