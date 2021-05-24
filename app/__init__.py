@@ -50,7 +50,7 @@ if __name__ == "__main__":
     app = create_app()
 
     from models import *
-    Base.metadata.create_all(bing=engine)
+    Base.metadata.create_all(bind=engine)
 
     app.run()
 
