@@ -59,12 +59,13 @@ def delete_item(item_id):
 
 @bp_it.route('/items', methods=['GET'])
 @jwt_required()
+@marshal_with(ItemSchema(many=True))
 def get_list_of_item():
     user_id = get_jwt_identity()
 
     items_list = Item.get_list_by_user(user_id)
 
-    return jsonify(items_list)
+    return items_list
 
 
 @bp_it.route('/send', methods=['POST'])
