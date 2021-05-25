@@ -47,8 +47,6 @@ def create_app(test_config=None):
     jwt = JWTManager(_app)
     jwt.init_app(_app)
 
-    docs.init_app(_app)
-
     return _app
 
 
@@ -57,6 +55,11 @@ if __name__ == "__main__":
 
     from models import *
     Base.metadata.create_all(bind=engine)
+
+    from app.registration.view import *
+    from app.authentication.view import *
+    from app.items.view import *
+    docs.init_app(app)
 
     app.run()
 
