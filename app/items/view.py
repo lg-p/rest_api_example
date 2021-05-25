@@ -4,7 +4,7 @@ from flask import jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_apispec import use_kwargs, marshal_with
 
-from app import session, docs
+from app import session, docs, logger
 from app.items import bp_it
 from models import Item, User
 from schemes import ItemSchema, SendItemSchema, URLSchema
@@ -26,6 +26,7 @@ def create_item(**kwargs):
         session.add(item)
         session.commit()
     except Exception as e:
+        logger.exception(f'Failed to create item: {e}')
         return jsonify({
             'message': e
         })
@@ -48,6 +49,7 @@ def delete_item(item_id):
         session.delete(item)
         session.commit()
     except Exception as e:
+        logger.exception(f'Failed to delete item: {e}')
         return jsonify({
             'message': e
         })
@@ -113,6 +115,7 @@ def get_item(**kwargs):
         session.add(item)
         session.commit()
     except Exception as e:
+        logger.exception(f'Failed to update item: {e}')
         return jsonify({
             'message': e
         })
