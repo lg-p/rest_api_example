@@ -1,14 +1,18 @@
-from flask import request, jsonify
+from flask import jsonify
+from flask_apispec import use_kwargs, marshal_with
 
+from app import docs
 from app.authentication import bp_auth
 from models import User
+from schemes import UserSchema, AuthenticationSchema
 
 
 @bp_auth.route('/login', methods=['POST'])
-def authentication():
-    param = request.json
-    user_login = param.get('login')
-    user_password = param.get('password')
+@use_kwargs(UserSchema)
+@marshal_with(AuthenticationSchema)
+def authentication(**kwargs):
+    user_login = kwargs.get('login')
+    user_password = kwargs.get('password')
 
     user = User.authenticate(user_login, user_password)
     token = user.get_token()
@@ -16,3 +20,6 @@ def authentication():
     return jsonify({
         'access_token': token
     })
+
+
+docs.register(authentication, blueprint='auth')

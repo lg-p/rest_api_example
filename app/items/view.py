@@ -1,18 +1,22 @@
 from urllib import parse
 
-from flask import request, jsonify
+from flask import jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_apispec import use_kwargs, marshal_with
+from marshmallow import fields, validate
 
-from app import session
+from app import session, docs
 from app.items import bp_it
 from models import Item, User
+from schemes import ItemSchema
 
 
 @bp_it.route('/items/new', methods=['POST'])
 @jwt_required()
-def create_item():
-    param = request.json
-    name = param.get('name')
+@use_kwargs(ItemSchema)
+@marshal_with(ItemSchema)
+def create_item(**kwargs):
+    name = kwargs.get('name')
 
     user_id = get_jwt_identity()
     if Item.item_exists(name, user_id):
@@ -34,6 +38,8 @@ def create_item():
 
 @bp_it.route('/items/<item_id>', methods=['DELETE'])
 @jwt_required()
+@use_kwargs(ItemSchema(only=('id',)))
+@marshal_with(ItemSchema)
 def delete_item(item_id):
     user_id = get_jwt_identity()
 
@@ -54,22 +60,23 @@ def delete_item(item_id):
 
 @bp_it.route('/items', methods=['GET'])
 @jwt_required()
+@marshal_with(ItemSchema(many=True))
 def get_list_of_item():
     user_id = get_jwt_identity()
 
     items_list = Item.get_list_by_user(user_id)
 
-    return jsonify(items_list)
+    return items_list
 
 
 @bp_it.route('/send', methods=['POST'])
 @jwt_required()
-def send_item():
+@use_kwargs({'id': fields.Integer(), 'login': fields.String(required=True, validate=[validate.Length(max=250)])})
+def send_item(**kwargs):
     user_id = get_jwt_identity()
 
-    param = request.get_json()
-    item_id = param.get('id')
-    host_user_login = param.get('login')
+    item_id = kwargs.get('id')
+    host_user_login = kwargs.get('login')
 
     if not User.user_exists(host_user_login):
         raise Exception("User does not exist")
@@ -83,10 +90,12 @@ def send_item():
 
 @bp_it.route('/get', methods=['GET'])
 @jwt_required()
-def get_item():
+@use_kwargs({'link': fields.String(required=True)})
+@marshal_with(ItemSchema)
+def get_item(**kwargs):
     user_id = get_jwt_identity()
 
-    link = request.get_json().get('link')
+    link = kwargs.get('link')
     parsed_query = parse.urlparse(link).query
     parsed_params = parse.parse_qsl(parsed_query)
 
@@ -111,3 +120,10 @@ def get_item():
     return jsonify({
         'message': "Item received successfully"
     })
+
+
+docs.register(create_item, blueprint='it')
+docs.register(delete_item, blueprint='it')
+docs.register(get_list_of_item, blueprint='it')
+docs.register(send_item, blueprint='it')
+docs.register(get_item, blueprint='it')

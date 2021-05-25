@@ -5,6 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from flask_jwt_extended import JWTManager
+from flask_apispec.extension import FlaskApiSpec
 
 from app.config import Config
 
@@ -13,6 +14,8 @@ session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=en
 
 Base = declarative_base()
 Base.query = session.query_property()
+
+docs = FlaskApiSpec()
 
 
 def create_app(test_config=None):
@@ -42,6 +45,9 @@ def create_app(test_config=None):
     _app.register_blueprint(bp_it, url_prefix='/api')
 
     jwt = JWTManager(_app)
+    jwt.init_app(_app)
+
+    docs.init_app(_app)
 
     return _app
 
@@ -50,7 +56,7 @@ if __name__ == "__main__":
     app = create_app()
 
     from models import *
-    Base.metadata.create_all(bing=engine)
+    Base.metadata.create_all(bind=engine)
 
     app.run()
 
