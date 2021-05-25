@@ -45,6 +45,7 @@ def create_app(test_config=None):
     _app.register_blueprint(bp_it, url_prefix='/api')
 
     jwt = JWTManager(_app)
+    jwt.init_app(_app)
 
     docs.init_app(_app)
 
