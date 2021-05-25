@@ -19,3 +19,12 @@ class UserSchema(Schema):
 class AuthenticationSchema(Schema):
     access_token = fields.String(dump_only=True)
     message = fields.String(dump_only=True)
+
+
+class SendItemSchema(Schema):
+    id = fields.Integer()
+    login = fields.String(required=True, validate=[validate.Length(max=250)])
+
+
+class URLSchema(Schema):
+    link = fields.String(required=True)
