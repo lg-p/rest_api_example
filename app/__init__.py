@@ -6,6 +6,7 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from flask_jwt_extended import JWTManager
 from flask_apispec.extension import FlaskApiSpec
+import logging
 
 from app.config import Config
 
@@ -49,6 +50,21 @@ def create_app(test_config=None):
 
     return _app
 
+
+def setup_logger():
+    _logger = logging.getLogger(__name__)
+    _logger.setLevel(logging.DEBUG)
+
+    formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
+    file_handler = logging.FileHandler('log/api.log')
+    file_handler.setFormatter(formatter)
+
+    _logger.addHandler(file_handler)
+
+    return _logger
+
+
+logger = setup_logger()
 
 if __name__ == "__main__":
     app = create_app()

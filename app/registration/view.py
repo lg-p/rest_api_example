@@ -3,7 +3,7 @@ from flask_apispec import use_kwargs, marshal_with
 
 from app.registration import bp_reg
 from models import User
-from app import session, docs
+from app import session, docs, logger
 from schemes import UserSchema
 
 
@@ -21,6 +21,7 @@ def registration(**kwargs):
         session.add(user)
         session.commit()
     except Exception as e:
+        logger.exception(f'User registration failed: {e}')
         return jsonify({
             'message': e
         })
