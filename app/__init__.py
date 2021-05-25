@@ -15,6 +15,8 @@ session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=en
 Base = declarative_base()
 Base.query = session.query_property()
 
+docs = FlaskApiSpec()
+
 
 def create_app(test_config=None):
     _app = Flask(__name__)
@@ -44,7 +46,6 @@ def create_app(test_config=None):
 
     jwt = JWTManager(_app)
 
-    docs = FlaskApiSpec()
     docs.init_app(_app)
 
     return _app
