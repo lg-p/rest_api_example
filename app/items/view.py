@@ -5,7 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_apispec import use_kwargs, marshal_with
 from marshmallow import fields, validate
 
-from app import session
+from app import session, docs
 from app.items import bp_it
 from models import Item, User
 from schemes import ItemSchema
@@ -120,3 +120,10 @@ def get_item(**kwargs):
     return jsonify({
         'message': "Item received successfully"
     })
+
+
+docs.register(create_item, blueprint='it')
+docs.register(delete_item, blueprint='it')
+docs.register(get_list_of_item, blueprint='it')
+docs.register(send_item, blueprint='it')
+docs.register(get_item, blueprint='it')

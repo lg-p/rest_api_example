@@ -1,6 +1,7 @@
 from flask import jsonify
 from flask_apispec import use_kwargs, marshal_with
 
+from app import docs
 from app.authentication import bp_auth
 from models import User
 from schemes import UserSchema, AuthenticationSchema
@@ -19,3 +20,6 @@ def authentication(**kwargs):
     return jsonify({
         'access_token': token
     })
+
+
+docs.register(authentication, blueprint='auth')

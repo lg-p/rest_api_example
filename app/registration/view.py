@@ -3,7 +3,7 @@ from flask_apispec import use_kwargs, marshal_with
 
 from app.registration import bp_reg
 from models import User
-from app import session
+from app import session, docs
 from schemes import UserSchema
 
 
@@ -28,3 +28,6 @@ def registration(**kwargs):
     return jsonify({
         'message': 'User registered successfully'
     })
+
+
+docs.register(registration, blueprint='reg')
