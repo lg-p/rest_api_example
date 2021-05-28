@@ -8,7 +8,7 @@ from flask_jwt_extended import JWTManager
 from flask_apispec.extension import FlaskApiSpec
 import logging
 
-from app.config import Config
+from config import Config
 
 engine = create_engine('sqlite:///db.sqlite')
 session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
