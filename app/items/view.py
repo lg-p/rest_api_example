@@ -3,6 +3,7 @@ from urllib import parse
 from flask import jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_apispec import use_kwargs, marshal_with
+from marshmallow import fields
 from sqlalchemy.exc import SQLAlchemyError, MultipleResultsFound, NoResultFound
 
 from app import session, docs, logger
@@ -41,7 +42,7 @@ def create_item(**kwargs):
 
 @bp_it.route('/items/<item_id>', methods=['DELETE'])
 @jwt_required()
-@use_kwargs(ItemSchema(only=('id',)))
+@use_kwargs({'id': fields.Integer()})
 @marshal_with(ItemSchema)
 def delete_item(item_id):
     user_id = get_jwt_identity()
