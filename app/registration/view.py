@@ -1,5 +1,6 @@
 from flask import jsonify
 from flask_apispec import use_kwargs, marshal_with
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.registration import bp_reg
 from models import User
@@ -14,20 +15,22 @@ def registration(**kwargs):
     user_login = kwargs.get('login')
 
     if User.user_exists(user_login):
-        raise Exception("User with this login already exists")
+        return jsonify({
+            'message': "User with this login already exists"
+        })
 
     user = User(**kwargs)
     try:
         session.add(user)
         session.commit()
-    except Exception as e:
-        logger.exception(f'User registration failed: {e}')
+    except SQLAlchemyError as errors:
+        logger.exception(f'User registration failed: {errors.args[0]}')
         return jsonify({
-            'message': e
+            'message': "User registration failed"
         })
 
     return jsonify({
-        'message': 'User registered successfully'
+        'message': "User registered successfully"
     })
 
 

@@ -32,13 +32,10 @@ class User(Base):
         """
         User authentication
         """
-        result = cls.query.filter(cls.login == login)
-        if not result.scalar():
-            raise Exception("No user with this login")
+        user = cls.query.filter(cls.login == login).one()
 
-        user = result.one()
         if not bcrypt.verify(password, user.password):
-            raise Exception("No user with this password")
+            raise UserException("Invalid password")
 
         return user
 
@@ -56,12 +53,9 @@ class User(Base):
         Searches for an user by login
         :return: User
         """
-        res = cls.query.filter(cls.login == login)
+        user = cls.query.filter(cls.login == login).one()
 
-        if not res.scalar():
-            raise Exception("User not found")
-
-        return res.one()
+        return user
 
 
 class Item(Base):
@@ -84,11 +78,9 @@ class Item(Base):
         Searches for an item by id
         :return: Item
         """
-        res = cls.query.filter(cls.id == item_id, cls.user_id == user_id)
-        if not res.scalar():
-            raise Exception("Item not found")
+        item = cls.query.filter(cls.id == item_id, cls.user_id == user_id).one()
 
-        return res.one()
+        return item
 
     @classmethod
     def find_item_by_id(cls, item_id: int):
@@ -96,11 +88,9 @@ class Item(Base):
         Searches for an item by id
         :return: Item
         """
-        res = cls.query.filter(cls.id == item_id)
-        if not res.scalar():
-            raise Exception("Item not found")
+        item = cls.query.filter(cls.id == item_id).one()
 
-        return res.one()
+        return item
 
     @classmethod
     def get_list_by_user(cls, user_id: int) -> list:
