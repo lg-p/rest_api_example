@@ -110,3 +110,11 @@ class Item(Base):
         result = cls.query.filter(cls.user_id == user_id).all()
 
         return result
+
+
+class UserException(Exception):
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return self.message
