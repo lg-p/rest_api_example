@@ -1,19 +1,16 @@
 from datetime import timedelta
 
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
 from flask_jwt_extended import create_access_token
 from passlib.hash import bcrypt
 
-from app import Base
+from app import db
 
 
-class User(Base):
-    __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
-    login = Column(String(250), nullable=False, unique=True)
-    password = Column(String(120), nullable=False)
-    items = relationship('Item')
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    login = db.Column(db.String(250), nullable=False, unique=True)
+    password = db.Column(db.String(120), nullable=False)
+    items = db.relationship('Item')
 
     def __init__(self, **kwargs):
         self.login = kwargs.get('login')
@@ -58,11 +55,10 @@ class User(Base):
         return user
 
 
-class Item(Base):
-    __tablename__ = "items"
-    id = Column(Integer, nullable=True, primary_key=True)
-    name = Column(String(250), nullable=True, unique=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
+class Item(db.Model):
+    id = db.Column(db.Integer, nullable=True, primary_key=True)
+    name = db.Column(db.String(250), nullable=True, unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     @classmethod
     def item_exists(cls, name: str, user_id: str) -> bool:

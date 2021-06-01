@@ -4,7 +4,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.registration import bp_reg
 from models import User
-from app import session, docs, logger
+from app import docs, logger, db
 from schemes import UserSchema
 
 
@@ -21,8 +21,8 @@ def registration(**kwargs):
 
     user = User(**kwargs)
     try:
-        session.add(user)
-        session.commit()
+        db.session.add(user)
+        db.session.commit()
     except SQLAlchemyError as errors:
         logger.exception(f'User registration failed: {errors.args[0]}')
         return jsonify({

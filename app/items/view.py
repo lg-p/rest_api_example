@@ -6,7 +6,7 @@ from flask_apispec import use_kwargs, marshal_with
 from marshmallow import fields
 from sqlalchemy.exc import SQLAlchemyError, MultipleResultsFound, NoResultFound
 
-from app import session, docs, logger
+from app import docs, logger, db
 from app.items import bp_it
 from models import Item, User
 from schemes import ItemSchema, SendItemSchema, URLSchema
@@ -27,8 +27,8 @@ def create_item(**kwargs):
 
     item = Item(name=name, user_id=user_id)
     try:
-        session.add(item)
-        session.commit()
+        db.session.add(item)
+        db.session.commit()
     except SQLAlchemyError as errors:
         logger.exception(f'Failed to create item: {errors.args[0]}')
         return jsonify({
@@ -49,8 +49,8 @@ def delete_item(item_id):
 
     try:
         item = Item.find_item(int(item_id), user_id)
-        session.delete(item)
-        session.commit()
+        db.session.delete(item)
+        db.session.commit()
     except (MultipleResultsFound, NoResultFound) as errors:
         logger.exception(f'Item not found: {errors.args[0]}')
         return jsonify({
@@ -141,8 +141,8 @@ def get_item(**kwargs):
     try:
         item = Item.find_item_by_id(item_id)
         item.user_id = user.id
-        session.add(item)
-        session.commit()
+        db.session.add(item)
+        db.session.commit()
     except SQLAlchemyError as errors:
         logger.exception(f'Failed to update item: {errors.args[0]}')
         return jsonify({
