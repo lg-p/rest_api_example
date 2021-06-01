@@ -1,23 +1,15 @@
 import pytest
-from sqlalchemy.orm.session import close_all_sessions
 
-from app import create_app, Base, engine, session as db_session
+from app import create_app, db
 from models import User, Item
+from config import TestConfig
 
 
 @pytest.fixture
 def test_app():
-    _app = create_app({
-            'TESTING': True,
-    })
-
-    Base.metadata.create_all(bind=engine)
-    _app.connection = engine.connect()
+    _app = create_app(test_config=TestConfig)
 
     yield _app
-
-    Base.metadata.drop_all(bind=engine)
-    _app.connection.close()
 
 
 @pytest.fixture
@@ -29,10 +21,12 @@ def test_client(test_app):
 def session(test_app):
     ctx = test_app.app_context()
     ctx.push()
+    db.create_all()
 
-    yield db_session
+    yield db.session
 
-    close_all_sessions()
+    db.session.remove()
+    db.drop_all()
     ctx.pop()
 
 
