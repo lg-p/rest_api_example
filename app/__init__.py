@@ -21,7 +21,7 @@ def create_app(test_config=None):
     if test_config is None:
         _app.config.from_object(Config)
     else:
-        _app.config.from_mapping(test_config)
+        _app.config.from_object(test_config)
 
     # ensure the instance folder exists
     try:

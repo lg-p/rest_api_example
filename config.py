@@ -18,3 +18,9 @@ class Config:
         plugins=[MarshmallowPlugin()],
     )
     APISPEC_SWAGGER_URL = '/swagger'
+
+
+class TestConfig:
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite://'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
