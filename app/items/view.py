@@ -30,6 +30,7 @@ def create_item(**kwargs):
         db.session.add(item)
         db.session.commit()
     except SQLAlchemyError as errors:
+        db.session.rollback()
         logger.exception(f'Failed to create item: {errors.args[0]}')
         return jsonify({
             'message': "Failed to create item"
@@ -52,6 +53,7 @@ def delete_item(item_id):
         db.session.delete(item)
         db.session.commit()
     except (MultipleResultsFound, NoResultFound) as errors:
+        db.session.rollback()
         logger.exception(f'Item not found: {errors.args[0]}')
         return jsonify({
             'message': "Item not found"
@@ -144,6 +146,7 @@ def get_item(**kwargs):
         db.session.add(item)
         db.session.commit()
     except SQLAlchemyError as errors:
+        db.session.rollback()
         logger.exception(f'Failed to update item: {errors.args[0]}')
         return jsonify({
             'message': "Failed to update item"

@@ -24,6 +24,7 @@ def registration(**kwargs):
         db.session.add(user)
         db.session.commit()
     except SQLAlchemyError as errors:
+        db.session.rollback()
         logger.exception(f'User registration failed: {errors.args[0]}')
         return jsonify({
             'message': "User registration failed"
