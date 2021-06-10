@@ -71,6 +71,8 @@ logger = setup_logger()
 
 my_app = create_app()
 client = my_app.test_client()
+with my_app.app_context():
+    db.create_all()
 
 
 if __name__ == "__main__":
