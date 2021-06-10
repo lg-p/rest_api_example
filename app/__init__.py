@@ -43,6 +43,8 @@ def create_app(test_config=None):
     jwt = JWTManager(_app)
     jwt.init_app(_app)
 
+    docs.init_app(_app)
+
     return _app
 
 
@@ -67,9 +69,6 @@ logger = setup_logger()
 if __name__ == "__main__":
     app = create_app()
 
-    from app.registration.view import *
-    from app.authentication.view import *
-    from app.items.view import *
-    docs.init_app(app)
-
-    app.run()
+from app.registration.view import *
+from app.authentication.view import *
+from app.items.view import *
