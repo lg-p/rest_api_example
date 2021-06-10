@@ -2,6 +2,7 @@ import os
 
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
 from flask_apispec.extension import FlaskApiSpec
 import logging
@@ -9,6 +10,7 @@ import logging
 from config import Config
 
 db = SQLAlchemy()
+migrate = Migrate()
 docs = FlaskApiSpec()
 
 
@@ -30,6 +32,7 @@ def create_app(test_config=None):
         pass
 
     db.init_app(_app)
+    migrate.init_app(_app, db)
 
     from app.registration import bp_reg
     _app.register_blueprint(bp_reg, url_prefix='/api')
