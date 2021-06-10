@@ -9,10 +9,6 @@ import logging
 
 from config import Config
 
-db = SQLAlchemy()
-migrate = Migrate()
-docs = FlaskApiSpec()
-
 
 def create_app(test_config=None):
     _app = Flask(__name__)
@@ -61,6 +57,9 @@ def setup_logger():
     return _logger
 
 
+db = SQLAlchemy()
+migrate = Migrate()
+docs = FlaskApiSpec()
 logger = setup_logger()
 
 my_app = create_app()
