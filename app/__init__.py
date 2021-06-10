@@ -69,8 +69,13 @@ def setup_logger():
 
 logger = setup_logger()
 
+my_app = create_app()
+client = my_app.test_client()
+
+
 if __name__ == "__main__":
-    app = create_app()
+    my_app.run()
+
 
 from app.registration.view import *
 from app.authentication.view import *
