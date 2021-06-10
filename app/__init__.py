@@ -50,8 +50,11 @@ def setup_logger():
     _logger = logging.getLogger(__name__)
     _logger.setLevel(logging.DEBUG)
 
+    if not os.path.exists(Config.LOG_URL):
+        os.makedirs(Config.LOG_URL)
+
     formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
-    file_handler = logging.FileHandler('log/api.log')
+    file_handler = logging.FileHandler(os.path.join(Config.LOG_URL, 'api.log'))
     file_handler.setFormatter(formatter)
 
     _logger.addHandler(file_handler)
