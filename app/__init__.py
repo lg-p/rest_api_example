@@ -25,12 +25,6 @@ def create_app(test_config=None):
     else:
         _app.config.from_object(test_config)
 
-    # ensure the instance folder exists
-    try:
-        os.makedirs(_app.instance_path)
-    except OSError:
-        pass
-
     db.init_app(_app)
     migrate.init_app(_app, db)
 
