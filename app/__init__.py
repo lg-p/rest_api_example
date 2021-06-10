@@ -1,22 +1,13 @@
 import os
 
 from flask import Flask
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask_jwt_extended import JWTManager
 from flask_apispec.extension import FlaskApiSpec
 import logging
 
-from app.config import Config
-
-engine = create_engine('sqlite:///db.sqlite')
-session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=engine))
-
-Base = declarative_base()
-Base.query = session.query_property()
-
-docs = FlaskApiSpec()
+from config import Config
 
 
 def create_app(test_config=None):
@@ -28,13 +19,10 @@ def create_app(test_config=None):
     if test_config is None:
         _app.config.from_object(Config)
     else:
-        _app.config.from_mapping(test_config)
+        _app.config.from_object(test_config)
 
-    # ensure the instance folder exists
-    try:
-        os.makedirs(_app.instance_path)
-    except OSError:
-        pass
+    db.init_app(_app)
+    migrate.init_app(_app, db)
 
     from app.registration import bp_reg
     _app.register_blueprint(bp_reg, url_prefix='/api')
@@ -48,6 +36,8 @@ def create_app(test_config=None):
     jwt = JWTManager(_app)
     jwt.init_app(_app)
 
+    docs.init_app(_app)
+
     return _app
 
 
@@ -55,8 +45,11 @@ def setup_logger():
     _logger = logging.getLogger(__name__)
     _logger.setLevel(logging.DEBUG)
 
+    if not os.path.exists(Config.LOG_URL):
+        os.makedirs(Config.LOG_URL)
+
     formatter = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(message)s')
-    file_handler = logging.FileHandler('log/api.log')
+    file_handler = logging.FileHandler(os.path.join(Config.LOG_URL, 'api.log'))
     file_handler.setFormatter(formatter)
 
     _logger.addHandler(file_handler)
@@ -64,21 +57,21 @@ def setup_logger():
     return _logger
 
 
+db = SQLAlchemy()
+migrate = Migrate()
+docs = FlaskApiSpec()
 logger = setup_logger()
 
+my_app = create_app()
+client = my_app.test_client()
+with my_app.app_context():
+    db.create_all()
+
+
 if __name__ == "__main__":
-    app = create_app()
+    my_app.run()
 
-    from models import *
-    Base.metadata.create_all(bind=engine)
 
-    from app.registration.view import *
-    from app.authentication.view import *
-    from app.items.view import *
-    docs.init_app(app)
-
-    app.run()
-
-    @app.teardown_appcontext
-    def shutdown_session(exception=None):
-        session.remove()
+from app.registration.view import *
+from app.authentication.view import *
+from app.items.view import *

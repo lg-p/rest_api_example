@@ -3,8 +3,10 @@ from urllib import parse
 from flask import jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_apispec import use_kwargs, marshal_with
+from marshmallow import fields
+from sqlalchemy.exc import SQLAlchemyError, MultipleResultsFound, NoResultFound
 
-from app import session, docs, logger
+from app import docs, logger, db
 from app.items import bp_it
 from models import Item, User
 from schemes import ItemSchema, SendItemSchema, URLSchema
@@ -19,16 +21,19 @@ def create_item(**kwargs):
 
     user_id = get_jwt_identity()
     if Item.item_exists(name, user_id):
-        raise Exception("Item  with this name already exists")
+        return jsonify({
+            'message': "Item  with this name already exists"
+        })
 
     item = Item(name=name, user_id=user_id)
     try:
-        session.add(item)
-        session.commit()
-    except Exception as e:
-        logger.exception(f'Failed to create item: {e}')
+        db.session.add(item)
+        db.session.commit()
+    except SQLAlchemyError as errors:
+        db.session.rollback()
+        logger.exception(f'Failed to create item: {errors.args[0]}')
         return jsonify({
-            'message': e
+            'message': "Failed to create item"
         })
 
     return jsonify({
@@ -38,20 +43,25 @@ def create_item(**kwargs):
 
 @bp_it.route('/items/<item_id>', methods=['DELETE'])
 @jwt_required()
-@use_kwargs(ItemSchema(only=('id',)))
+@use_kwargs({'id': fields.Integer()})
 @marshal_with(ItemSchema)
 def delete_item(item_id):
     user_id = get_jwt_identity()
 
-    item = Item.find_item(int(item_id), user_id)
-
     try:
-        session.delete(item)
-        session.commit()
-    except Exception as e:
-        logger.exception(f'Failed to delete item: {e}')
+        item = Item.find_item(int(item_id), user_id)
+        db.session.delete(item)
+        db.session.commit()
+    except (MultipleResultsFound, NoResultFound) as errors:
+        db.session.rollback()
+        logger.exception(f'Item not found: {errors.args[0]}')
         return jsonify({
-            'message': e
+            'message': "Item not found"
+        })
+    except SQLAlchemyError as errors:
+        logger.exception(f'Failed to delete item: {errors.args[0]}')
+        return jsonify({
+            'message': "Failed to delete item"
         })
 
     return jsonify({
@@ -65,9 +75,14 @@ def delete_item(item_id):
 def get_list_of_item():
     user_id = get_jwt_identity()
 
-    items_list = Item.get_list_by_user(user_id)
-
-    return items_list
+    try:
+        items_list = Item.get_list_by_user(user_id)
+        return items_list
+    except SQLAlchemyError as errors:
+        logger.exception(f'Failed to get the list of items: {errors.args[0]}')
+        return jsonify([{
+            'message': "Failed to get the list of items"
+        }])
 
 
 @bp_it.route('/send', methods=['POST'])
@@ -81,9 +96,17 @@ def send_item(**kwargs):
     host_user_login = kwargs.get('login')
 
     if not User.user_exists(host_user_login):
-        raise Exception("User does not exist")
+        return jsonify({
+            'message': "User does not exist"
+        })
 
-    item = Item.find_item(item_id, user_id)
+    try:
+        item = Item.find_item(item_id, user_id)
+    except SQLAlchemyError as errors:
+        logger.exception(f'Failed to find item: {errors.args[0]}')
+        return jsonify({
+            'message': "Failed to find item"
+        })
 
     link = f"api/items/?login={host_user_login}&id={item.id}"
 
@@ -104,20 +127,29 @@ def get_item(**kwargs):
     user_login = str(parsed_params[0][1])
     item_id = int(parsed_params[1][1])
 
-    user = User.find_user_by_login(user_login)
-    if user_id != user.id:
-        raise Exception("The link is for another user")
+    try:
+        user = User.find_user_by_login(user_login)
+    except SQLAlchemyError as errors:
+        logger.exception(f'Failed to find user: {errors.args[0]}')
+        return jsonify({
+            'message': "Failed to find user"
+        })
 
-    item = Item.find_item_by_id(item_id)
+    if user_id != user.id:
+        return jsonify({
+            'message': "The link is for another user"
+        })
 
     try:
+        item = Item.find_item_by_id(item_id)
         item.user_id = user.id
-        session.add(item)
-        session.commit()
-    except Exception as e:
-        logger.exception(f'Failed to update item: {e}')
+        db.session.add(item)
+        db.session.commit()
+    except SQLAlchemyError as errors:
+        db.session.rollback()
+        logger.exception(f'Failed to update item: {errors.args[0]}')
         return jsonify({
-            'message': e
+            'message': "Failed to update item"
         })
 
     return jsonify({

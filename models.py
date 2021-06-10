@@ -1,19 +1,16 @@
 from datetime import timedelta
 
-from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import relationship
 from flask_jwt_extended import create_access_token
 from passlib.hash import bcrypt
 
-from app import Base
+from app import db
 
 
-class User(Base):
-    __tablename__ = 'users'
-    id = Column(Integer, primary_key=True)
-    login = Column(String(250), nullable=False, unique=True)
-    password = Column(String(120), nullable=False)
-    items = relationship('Item')
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    login = db.Column(db.String(250), nullable=False, unique=True)
+    password = db.Column(db.String(120), nullable=False)
+    items = db.relationship('Item')
 
     def __init__(self, **kwargs):
         self.login = kwargs.get('login')
@@ -32,13 +29,10 @@ class User(Base):
         """
         User authentication
         """
-        result = cls.query.filter(cls.login == login)
-        if not result.scalar():
-            raise Exception("No user with this login")
+        user = cls.query.filter(cls.login == login).one()
 
-        user = result.one()
         if not bcrypt.verify(password, user.password):
-            raise Exception("No user with this password")
+            raise UserException("Invalid password")
 
         return user
 
@@ -56,19 +50,15 @@ class User(Base):
         Searches for an user by login
         :return: User
         """
-        res = cls.query.filter(cls.login == login)
+        user = cls.query.filter(cls.login == login).one()
 
-        if not res.scalar():
-            raise Exception("User not found")
-
-        return res.one()
+        return user
 
 
-class Item(Base):
-    __tablename__ = "items"
-    id = Column(Integer, nullable=True, primary_key=True)
-    name = Column(String(250), nullable=True, unique=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
+class Item(db.Model):
+    id = db.Column(db.Integer, nullable=True, primary_key=True)
+    name = db.Column(db.String(250), nullable=True, unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     @classmethod
     def item_exists(cls, name: str, user_id: str) -> bool:
@@ -84,11 +74,9 @@ class Item(Base):
         Searches for an item by id
         :return: Item
         """
-        res = cls.query.filter(cls.id == item_id, cls.user_id == user_id)
-        if not res.scalar():
-            raise Exception("Item not found")
+        item = cls.query.filter(cls.id == item_id, cls.user_id == user_id).one()
 
-        return res.one()
+        return item
 
     @classmethod
     def find_item_by_id(cls, item_id: int):
@@ -96,11 +84,9 @@ class Item(Base):
         Searches for an item by id
         :return: Item
         """
-        res = cls.query.filter(cls.id == item_id)
-        if not res.scalar():
-            raise Exception("Item not found")
+        item = cls.query.filter(cls.id == item_id).one()
 
-        return res.one()
+        return item
 
     @classmethod
     def get_list_by_user(cls, user_id: int) -> list:
@@ -110,3 +96,11 @@ class Item(Base):
         result = cls.query.filter(cls.user_id == user_id).all()
 
         return result
+
+
+class UserException(Exception):
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return self.message
